@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<title>Moniteye</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+<script src="https://cdn-webgl.eegeo.com/eegeojs/api/v0.1.780/eegeo.js"></script>
+<script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
+
+<style>
+.box{
+    float:left;
+    margin-right:20px;
+}
+.clear{
+    clear:both;
+}
+body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
+body {font-size:16px;}
+.w3-half img{margin-bottom:-6px;margin-top:16px;opacity:0.8;cursor:pointer}
+.w3-half img:hover{opacity:1}
+</style>
+<body>
+
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;" id="mySidebar"><br>
+  <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+  <div class="w3-container">
+    <h3 class="w3-padding-64"><b>Annalisa<br>Iob</b></h3>
+  </div>
+  <div class="w3-bar-block">
+    <a href="#" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
+    <a href="#visoptions" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Surfaces</a>
+    <a href="#3d" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">3D Map</a> 
+  </div>
+</nav>
+
+<!-- Top menu on small screens -->
+<header class="w3-container w3-top w3-hide-large w3-red w3-xlarge w3-padding">
+  <a href="javascript:void(0)" class="w3-button w3-red w3-margin-right" onclick="w3_open()">☰</a>
+  <span>Annalisa Iob</span>
+</header>
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:340px;margin-right:40px">
+
+  <!-- Header -->
+  <div class="w3-container" style="margin-top:80px" id="showcase">
+    <h1 class="w3-jumbo"><b>Moniteye: dispalcement exercise</b></h1>
+  </div>
+
+  <div class="w3-container" id="visoptions" style="margin-top:75px">
+    <h1 class="w3-xxxlarge w3-text-red"><b>Comments</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+    <h2>Displacement decomposition</h2>
+    <p>In order to obtain the absolute displacement through a decompostition in the N-S and E-W directions, I believe I would not only need Line Of Sight displacement grids, but also the satellites viewing geometry. Normally, I would perform decompositions through a tool on ENVI SARscape, or alternatively,  <a href="http://tre-altamira.com/uploads/2016_Earthquake-rapid-mapping_Sentinel-1-TOPSAR-interferograms.pdf">the equation in this paper</a>.  
+    </p>
+    <h2>Visualisation options</h2>
+    <p>Depending on the application, displacement values can be visualised in a number of ways. If monitoring a large area, a raster or 3D surface approach could work. <br /> It is often however not necessary to display displacement values across the whole area of study.<br />  I would compute a spatial clustering analysis to pick up areas with dense clusters of high values (for uplift) or low values (for subsidence). I tried on these subsets, but their charscteristics wouldn't allow for the statistics to be significant! <br /> 
+    Once the clusters are isolated, they can be monitored without the need to use the whole datasets in further analyses. </p>
+    <p>In the case of asset monitoring, it is again often unnecessary to use the entire dataset; groups of points over and around the assets of interest can be overalyed on the assets themselves, and analysed over time.</p>
+  <!-- Services -->
+  <div class="w3-container" id="visoptions" style="margin-top:75px">
+    <h1 class="w3-xxxlarge w3-text-red"><b>3D Surfaces</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+    <p>Click on the map to move around, use the controls to zoom and pan around the surface!</p>
+    <div class="box"> <iframe width="900" height="800" frameborder="0" scrolling="no" src="//plot.ly/~analysisiob/10.embed"></iframe></div>
+
+    <div class="box">    <iframe width="900" height="800" frameborder="0" scrolling="no" src="//plot.ly/~analysisiob/12.embed"></iframe></div>
+    
+    <p>These are example of 3D surfaces visualisation options; they are completely "live", they can be explored just by clicking and turining on the images. <br /> 
+    PLEASE NOTE that these surfaces were created with a simple spline function for simplicity, but I would normally use Kriging when creating a surface from spatial data. <br /> 
+    With more time, I would want to implement a time slider widget that would recompute the surfaces at the changing of dates, and add perhaps some conextual information to make the graphs more human-friendly (perhaps a basemap?)
+    </p>
+  </div>
+  
+  <!-- Designers -->
+  <div class="w3-container" id="3d" style="margin-top:75px">
+    <h1 class="w3-xxxlarge w3-text-red"><b>3D maps</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+    <div id="map" style="width: 600px; height: 400px;"></div>
+    <div style="position: relative">
+    <script>
+    
+  
+  
+  var map = L.eeGeo.map('map', '6c00c4721a89d9ac45a722935c20f938', {
+    center: [51.517327, -0.120005],
+    zoom: 15
+  });
+
+    L.control.zoom({
+     position:'topright'
+  }).addTo(map);
+  setTimeout(function() {
+  map.setView([51.514613, -0.081019], 15, {headingDegrees: 204.374, tiltDegrees:15.0});
+  }, 10000);
+  
+  var marker = L.marker([51.514613, -0.081019], {
+        elevation: 360.0,
+        title: "ID: 23967-2781"
+      }).addTo(map);
+  marker.bindPopup("See chart below for displacement values of this point over time").openPopup();
+
+    //map.addControl(new customControl());
+
+    </script>
+    <div id="timeslider" >
+    <iframe width="600" height="500" frameborder="0" scrolling="no" src="//plot.ly/~analysisiob/20.embed"></iframe></div>
+    <p>This above is a very simple example of what could be visualised when focusing on a specific asset, or group of assets. 
+      <br /> There are countless possible, very interesting implementations to this 3D map, the first one being probably a map-chart interaction (the marker on the map moves according to the slider on the chart).
+    </p>
+    
+  </div>
+
+
+<!-- End page content -->
+</div>
+
+<!-- W3.CSS Container -->
+<div class="w3-light-grey w3-container w3-padding-32" style="margin-top:75px;padding-right:58px"><p class="w3-right">Powered by <a href="https://www.w3schools.com/w3css/default.asp" title="W3.CSS" target="_blank" class="w3-hover-opacity">w3.css</a></p></div>
+
+<script>
+// Script to open and close sidebar
+function w3_open() {
+    document.getElementById("mySidebar").style.display = "block";
+    document.getElementById("myOverlay").style.display = "block";
+}
+ 
+function w3_close() {
+    document.getElementById("mySidebar").style.display = "none";
+    document.getElementById("myOverlay").style.display = "none";
+}
+
+// Modal Image Gallery
+function onClick(element) {
+  document.getElementById("img01").src = element.src;
+  document.getElementById("modal01").style.display = "block";
+  var captionText = document.getElementById("caption");
+  captionText.innerHTML = element.alt;
+}
+</script>
+
+</body>
+</html>
